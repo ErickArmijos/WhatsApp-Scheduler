@@ -1,10 +1,8 @@
-#import pywhatkit
-from Controller.time_controller import establecer_hora
-from Controller.inputs_controller import *
 import tkinter as tk
 from tkinter import messagebox
+from Controller.whatsapp_sender import send_message
 
-def submit_form():
+def submit_form(event=None):
     telefono = telefono_entry.get()
     mensaje = mensaje_entry.get()
     hora = hora_entry.get()
@@ -26,6 +24,16 @@ def submit_form():
 
     # Si todos los datos son válidos, mostrar el mensaje de éxito
     messagebox.showinfo("Formulario Enviado", f"Teléfono: {telefono}\nMensaje: {mensaje}\nHora: {hora}:{minuto}")
+    send_message(telefono,mensaje,hora,minuto)
+
+
+
+def focus_next_entry(event, entry_list):
+    current_index = entry_list.index(event.widget)
+    next_index = (current_index + 1) % len(entry_list)
+    entry_list[next_index].focus()
+    if current_index == len(entry_list)-1:  # Si es el último campo de entrada
+        submit_form()
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -50,26 +58,23 @@ mensaje_entry.grid(row=2, column=1, padx=70, pady=10)
 tk.Label(root, text="Hora (0-23):", bg="#121212", fg="white", font=('Arial', 12)).grid(row=3, column=0, sticky="w", padx=70, pady=10)
 hora_entry = tk.Entry(root)
 hora_entry.grid(row=3, column=1, padx=70, pady=10)
+hora_entry.bind("<Return>", lambda event: focus_next_entry(event, [minuto_entry]))
 
 tk.Label(root, text="Minuto (0-59):", bg="#121212", fg="white", font=('Arial', 12)).grid(row=4, column=0, sticky="w", padx=70, pady=10)
 minuto_entry = tk.Entry(root)
 minuto_entry.grid(row=4, column=1, padx=70, pady=10)
+minuto_entry.bind("<Return>", submit_form)
 
 # Botón para enviar el formulario
 submit_button = tk.Button(root, text="Enviar", command=submit_form, bg="green", fg="white", font=('Arial', 14, 'bold'))
 submit_button.grid(row=5, column=0, columnspan=2, pady=20, padx=70, sticky="we")
 
+# Lista de entradas para enlazar con el evento de pulsación de tecla
+entry_list = [telefono_entry, mensaje_entry, hora_entry, minuto_entry]
+
+# Enlazar evento de pulsación de tecla para avanzar al siguiente campo
+for entry in entry_list:
+    entry.bind("<Return>", lambda event: focus_next_entry(event, entry_list))
+
 # Ejecutar el bucle principal de la ventana
 root.mainloop()
-
-
-
-
-#numero_destino = str(input("Ingrese el número de destino: "))
-#mensaje = str(input("Ingrese el mensaje: "))
-#hora = str(input("¿En cuantas horas desea enviar el mensaje?: "))
-#minuto = str(input("¿En cuantos minutos desea enviar el mensaje?: "))
-
-#tiempo_programado = establecer_hora(hora,minuto)
-#pywhatkit.sendwhatmsg("+593"+numero_destino, mensaje,tiempo_programado[0],tiempo_programado[1])
-
